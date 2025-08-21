@@ -79,7 +79,7 @@
      * HELPERS
      ********************/
     const q = sel => document.querySelector(sel);
-    const nlDate = (iso) => new Date(iso + 'T00:00:00').toLocaleDateString('nl-NL', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    //const nlDate = (iso) => new Date(iso + 'T00:00:00').toLocaleDateString('nl-NL', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
     function personPhoto(p, urlFromSheet) { return urlFromSheet || `https://ui-avatars.com/api/?name=${encodeURIComponent(p)}&background=e2e8f0`; }
 
     // --- JSONP fallback (voor CORS) ---
@@ -142,7 +142,7 @@
         return;
       }
 
-      title.textContent = `${next.person} neemt koekjes mee op ${next.date_nl || next.date}}`;
+      title.textContent = `${next.person} neemt koekjes mee op ${next.date_nl}}`;
       const b = [];
       if (next.extra === 'yes') b.push('<span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800">Extra koekjes</span>');
       if (next.sprintreview === 'yes') b.push('<span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800">Sprintreview</span>');
