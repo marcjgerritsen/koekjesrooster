@@ -65,7 +65,7 @@
     </section>
   </main>
 
-  <footer class="text-center text-xs text-slate-500 py-6">© Koekjesrooster – simpele webapp</footer>
+  <footer class="text-center text-xs text-slate-500 py-6">© Koekjesrooster – Marc Gerritsen@vr-rr.nl</footer>
 
   <script>
     /********************
@@ -142,7 +142,7 @@
         return;
       }
 
-      title.textContent = `${next.person} neemt koekjes mee op ${nlDate(next.date)}`;
+      title.textContent = `${next.person} neemt koekjes mee op ${next.date_nl || next.date}}`;
       const b = [];
       if (next.extra === 'yes') b.push('<span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800">Extra koekjes</span>');
       if (next.sprintreview === 'yes') b.push('<span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800">Sprintreview</span>');
@@ -168,7 +168,7 @@
         return `
         <div class="border rounded-xl p-3 flex items-center justify-between">
           <div>
-            <div class="font-medium">${x.person} – ${nlDate(x.date)}</div>
+            <div class="font-medium">${x.person} – ${next.date_nl || next.date}}</div>
             <div class="text-xs text-slate-600">Afwezig: ${absentText} · Online: ${onlineText} · Extra: ${x.extra||'no'} · Sprintreview: ${x.sprintreview||'no'}</div>
           </div>
           <img src="${personPhoto(x.person, x.photo)}" class="h-8 w-8 rounded-md border"/>
@@ -212,11 +212,24 @@
 
     document.getElementById('manageLink').href = SHEET_URL;
 
-    async function init() {
-      showSection('home');
-      try { await fetchAll(); fillPeople(); } catch {}
-      try { await renderHome(); } catch {}
-    }
+  async function init() {
+  showSection('home');
+
+  try {
+    await fetchAll();
+    fillPeople();
+  } catch (err) {
+    console.error('[init] fetchAll/fillPeople failed:', err);
+  }
+
+  try {
+    await renderHome();
+  } catch (err) {
+    console.error('[init] renderHome failed:', err);
+    const title = document.getElementById('nextTitle');
+    if (title) title.textContent = 'Kan data niet laden (check API_URL / toegang).';
+  }
+}
     init();
   </script>
 </body>
