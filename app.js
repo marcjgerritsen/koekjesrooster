@@ -91,6 +91,61 @@ function showSection(name) {
   $('#navSearch').className = name === 'search' ? on : off;
 }
 
+// ==== Donderdag helpers ====
+
+/** Format any date-like input to "YYYY-MM-DD" (local zone safe). */
+function toISO(d) {
+  // If it's already ISO
+  if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+
+  const dt = (d instanceof Date) ? new Date(d.getTime()) : new Date(d);
+  if (isNaN(+dt)) return '';
+  // Normalize to local midnight, then stringify in UTC to avoid TZ drift
+  dt.setHours(0, 0, 0, 0);
+  dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+  return dt.toISOString().slice(0, 10);
+}
+
+/** Is the given ISO date (YYYY-MM-DD) a Thursday? */
+function isThursday(iso) {
+  const dt = (typeof iso === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(iso))
+    ? new Date(iso + 'T00:00:00')
+    : new Date(iso);
+  if (isNaN(+dt)) return false;
+  return dt.getDay() === 4; // 0=Sun ... 4=Thu
+}
+
+/** First Thursday strictly in the future from the given date/time. */
+function upcomingThursdayISO(from = new Date()) {
+  const dt = new Date(from);
+  dt.setHours(0, 0, 0, 0);
+  const day = dt.getDay();
+  let add = (4 - day + 7) % 7;
+  if (add === 0) add = 7; // if today is Thu, jump to next week
+  dt.setDate(dt.getDate() + add);
+  return toISO(dt);
+}
+
+/** Nearest Thursday to the given date (ties resolve to the next Thursday). */
+function nearestThursdayISO(iso) {
+  const base = (typeof iso === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(iso))
+    ? new Date(iso + 'T00:00:00')
+    : new Date(iso);
+  if (isNaN(+base)) return '';
+  base.setHours(0, 0, 0, 0);
+
+  const day = base.getDay();
+  const deltaNext = (4 - day + 7) % 7;           // days to next Thu
+  const deltaPrev = (day - 4 + 7) % 7;           // days since last Thu
+
+  const next = new Date(base); next.setDate(base.getDate() + deltaNext);
+  const prev = new Date(base); prev.setDate(base.getDate() - deltaPrev);
+
+  const choose = (Math.abs(next - base) < Math.abs(base - prev)) ? next : prev;
+  return toISO(choose);
+}
+
+
 /********************
  * DATA
  ********************/
@@ -232,16 +287,34 @@ function debugPanelNext(next) {
   showDebugPanel();
   $('#debugNext').textContent = JSON.stringify(next, null, 2);
 }
-function handleSearchSubmit(e) {
-  e.preventDefault();
-  const d = document.getElementById('qDate').value || null;
-  const p = document.getElementById('qPerson').value || null;
+function runSearch(kind) {
+  const dateEl   = document.getElementById('qDate');
+  const personEl = document.getElementById('qPerson');
+
+  // Maak de andere filter leeg op basis van wat er aangepast is
+  if (kind === 'date' && personEl.value)  personEl.value = '';
+  if (kind === 'person' && dateEl.value)  dateEl.value   = '';
+
+  const d = dateEl.value || null;
+  const p = personEl.value || null;
 
   let arr = ALL.slice();
-  if (d) arr = arr.filter(x => x.date === d);   // ISO match
-  if (p) arr = arr.filter(x => x.person === p);
-
+  if (d) {
+    // Alleen datum filteren
+    arr = arr.filter(x => x.date === d);
+  } else if (p) {
+    // Alleen persoon filteren
+    arr = arr.filter(x => x.person === p);
+  }
   renderSearchList(arr);
+}
+
+// vervang je huidige handleSearchSubmit door deze
+function handleSearchSubmit(e) {
+  if (e) e.preventDefault();
+  const hasDate   = !!document.getElementById('qDate').value;
+  const hasPerson = !!document.getElementById('qPerson').value;
+  runSearch(hasDate ? 'date' : (hasPerson ? 'person' : ''));
 }
 
 async function init() {
@@ -266,23 +339,76 @@ async function init() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // bestaande bindings
-  document.getElementById('navHome').addEventListener('click', () => showSection('home'));
-  document.getElementById('navSearch').addEventListener('click', () => showSection('search'));
-  document.getElementById('btnRefresh').addEventListener('click', () => init());
+  // --- navigatie & refresh ---
+  const homeBtn   = document.getElementById('navHome');
+  const searchBtn = document.getElementById('navSearch');
+  const refresh   = document.getElementById('btnRefresh');
+  const manage    = document.getElementById('manageLink');
 
-  // ⬇️ zoekformulier submit
-  const form = document.getElementById('searchForm');
+  if (homeBtn)   homeBtn.addEventListener('click', () => showSection('home'));
+  if (searchBtn) searchBtn.addEventListener('click', () => showSection('search'));
+  if (refresh)   refresh.addEventListener('click', () => init());
+  if (manage && typeof SHEET_URL === 'string') manage.href = SHEET_URL;
+
+  // --- zoekformulier ---
+  const form     = document.getElementById('searchForm');
+  const dateEl   = document.getElementById('qDate');
+  const personEl = document.getElementById('qPerson');
+
+  // 1) submit (blijft bestaan voor Enter/knop)
   if (form) form.addEventListener('submit', handleSearchSubmit);
 
-  // (optioneel) direct filteren bij wijzigen
-  ['qDate','qPerson'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('change', () =>
-      handleSearchSubmit(new Event('submit', { cancelable: true }))
-    );
+  // 2) OF-logica live:
+  //    - wijzigen van persoon => runSearch('person') en datum leeg
+  if (personEl) {
+    personEl.addEventListener('change', () => runSearch('person'));
+  }
+
+  //    - wijzigen van datum => runSearch('date') en persoon leeg
+  if (dateEl) {
+    // Alleen donderdagen: basis-instellingen
+    const baseThu = upcomingThursdayISO(new Date()); // eerstvolgende donderdag
+    dateEl.setAttribute('min', baseThu);
+    dateEl.setAttribute('step', '7'); // 7-daagse stappen vanaf min
+
+    // helper voor visuele hint
+    const syncDateStyles = () => {
+      dateEl.classList.toggle('is-thursday', isThursday(dateEl.value));
+      dateEl.classList.toggle('is-invalid', !!dateEl.value && !isThursday(dateEl.value));
+    };
+    syncDateStyles();
+
+    dateEl.addEventListener('change', () => {
+      // corrigeer naar dichtstbijzijnde donderdag indien nodig
+      if (dateEl.value && !isThursday(dateEl.value)) {
+        dateEl.value = nearestThursdayISO(dateEl.value);
+      }
+      dateEl.setCustomValidity('');
+      syncDateStyles();
+      runSearch('date'); // triggert OF-logica en wist persoon
+    });
+
+    // optioneel: pijltjes ↑/↓ springen een week
+    dateEl.addEventListener('keydown', (e) => {
+      if (!dateEl.value) return;
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        const dt = new Date(dateEl.value + 'T00:00:00');
+        dt.setDate(dt.getDate() + (e.key === 'ArrowUp' ? 7 : -7));
+        dateEl.value = toISO(dt);
+        syncDateStyles();
+        runSearch('date');
+      }
+    });
+  }
+
+  // --- global error guard ---
+  window.addEventListener('unhandledrejection', (e) => {
+    console.error('[global] Unhandled promise rejection:', e.reason);
   });
 
+  // --- init view+data ---
+  showSection('home');
   init();
 });
 
