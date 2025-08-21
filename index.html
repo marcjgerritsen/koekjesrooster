@@ -6,70 +6,59 @@
   <title>Koekjesrooster</title>
   <meta name="robots" content="noindex,nofollow">
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    .badge { @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium; }
-    .badge-green { @apply bg-green-100 text-green-800; }
-    .badge-amber { @apply bg-amber-100 text-amber-800; }
-    .badge-slate { @apply bg-slate-100 text-slate-700; }
-    .btn { @apply inline-flex items-center gap-2 rounded-xl px-3 py-2 shadow-sm border bg-white hover:bg-slate-50 active:scale-[.99]; }
-    .btn-primary { @apply bg-blue-600 text-white border-blue-600 hover:bg-blue-700; }
-    .card { @apply rounded-2xl shadow-sm border bg-white; }
-    .input { @apply w-full rounded-xl border px-3 py-2; }
-    .section { @apply max-w-6xl mx-auto p-4 sm:p-6 space-y-6; }
-  </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
   <header class="border-b bg-white">
     <div class="max-w-6xl mx-auto flex items-center justify-between p-4 sm:p-6">
       <h1 class="text-2xl font-bold">🍪 Koekjesrooster</h1>
       <nav class="flex gap-3">
-        <button id="navHome" class="btn btn-primary">Home</button>
-        <button id="navSearch" class="btn">Zoeken</button>
-        <a id="manageLink" class="btn" href="#" target="_blank" rel="noopener">Beheren in Google&nbsp;Sheets</a>
+        <button id="navHome" class="inline-flex items-center gap-2 rounded-xl px-3 py-2 shadow-sm border bg-blue-600 text-white border-blue-600 hover:bg-blue-700">Home</button>
+        <button id="navSearch" class="inline-flex items-center gap-2 rounded-xl px-3 py-2 shadow-sm border bg-white hover:bg-slate-50">Zoeken</button>
+        <a id="manageLink" class="inline-flex items-center gap-2 rounded-xl px-3 py-2 shadow-sm border bg-white hover:bg-slate-50" href="#" target="_blank" rel="noopener">Beheren in Google Sheets</a>
       </nav>
     </div>
   </header>
 
-  <main class="section">
+  <main class="max-w-6xl mx-auto p-4 sm:p-6 space-y-6">
     <!-- HOME / VOLGENDE BEURT -->
     <section id="homeSection" class="space-y-4">
-      <div class="card p-5 sm:p-6">
+      <div class="rounded-2xl shadow-sm border bg-white p-5 sm:p-6">
         <div class="flex items-center gap-4">
-          <img id="nextPhoto" alt="Foto volgende persoon" class="h-16 w-16 rounded-2xl object-cover border" src="" onerror="this.src='https://ui-avatars.com/api/?name=Koekjes&background=e2e8f0'" />
+          <img id="nextPhoto" alt="Foto volgende persoon" class="h-16 w-16 rounded-2xl object-cover border" src="" onerror="this.src='https://ui-avatars.com/api/?name=Koekjes&background=e2e8f0'"/>
           <div class="flex-1">
             <p class="text-sm text-slate-500">Eerstvolgende koekjesdienst</p>
             <h2 id="nextTitle" class="text-xl font-semibold">—</h2>
             <div id="nextBadges" class="mt-1 flex flex-wrap gap-2"></div>
           </div>
           <div class="flex flex-col gap-2">
-            <button id="btnRefresh" class="btn">Verversen</button>
+            <button id="btnRefresh" class="inline-flex items-center gap-2 rounded-xl px-3 py-2 shadow-sm border bg-white hover:bg-slate-50">Verversen</button>
           </div>
         </div>
       </div>
-      <div class="text-sm text-slate-600">
-        <p>Beheer staat in Google&nbsp;Sheets (knop bovenaan). Deze pagina leest alleen de gegevens.</p>
-      </div>
+      <p class="text-sm text-slate-600">
+        Beheer staat in Google Sheets (knop bovenaan). Deze pagina leest alleen de gegevens.
+      </p>
     </section>
 
     <!-- ZOEKEN -->
     <section id="searchSection" class="hidden space-y-4">
-      <div class="card p-5 sm:p-6">
+      <div class="rounded-2xl shadow-sm border bg-white p-5 sm:p-6">
         <h3 class="text-lg font-semibold mb-4">Zoeken</h3>
         <form id="searchForm" class="grid sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm mb-1">Op datum</label>
-            <input type="date" id="qDate" class="input" />
+            <input type="date" id="qDate" class="w-full rounded-xl border px-3 py-2" />
           </div>
           <div>
             <label class="block text-sm mb-1">Op persoon</label>
-            <select id="qPerson" class="input"></select>
+            <select id="qPerson" class="w-full rounded-xl border px-3 py-2"></select>
           </div>
           <div class="flex items-end">
-            <button class="btn btn-primary" type="submit">Zoek</button>
+            <button class="inline-flex items-center gap-2 rounded-xl px-3 py-2 shadow-sm border bg-blue-600 text-white border-blue-600 hover:bg-blue-700" type="submit">Zoek</button>
           </div>
         </form>
       </div>
-      <div class="card p-5 sm:p-6">
+      <div class="rounded-2xl shadow-sm border bg-white p-5 sm:p-6">
         <h4 class="font-semibold mb-3">Resultaten</h4>
         <div id="searchResults" class="space-y-2 text-sm"></div>
       </div>
@@ -82,7 +71,7 @@
     /********************
      * CONFIG
      ********************/
-    // Ingevulde URLs
+    // jouw URLs:
     const API_URL   = 'https://script.google.com/macros/s/AKfycbxoOpZs6yfFF6Az2v79GQOwK1-K9AorZpEe5Jija5X_1w_ltC4h5P5qC5SlpEMWRsNQqQ/exec';
     const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1gd4RDGMyfbN7GSEkyMJDSeAiP65w6ohnC86UVvXlm6g/edit?gid=0#gid=0';
 
@@ -93,6 +82,32 @@
     const nlDate = (iso) => new Date(iso + 'T00:00:00').toLocaleDateString('nl-NL', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
     function personPhoto(p, urlFromSheet) { return urlFromSheet || `https://ui-avatars.com/api/?name=${encodeURIComponent(p)}&background=e2e8f0`; }
 
+    // --- JSONP fallback (voor CORS) ---
+    function jsonp(url) {
+      return new Promise((resolve, reject) => {
+        const cb = 'cb_' + Math.random().toString(36).slice(2);
+        const s = document.createElement('script');
+        const sep = url.includes('?') ? '&' : '?';
+        s.src = url + sep + 'callback=' + cb + '&_=' + Date.now();
+        window[cb] = (data) => { resolve(data); cleanup(); };
+        s.onerror = () => { reject(new Error('JSONP failed')); cleanup(); };
+        document.head.appendChild(s);
+        function cleanup(){ delete window[cb]; s.remove(); }
+        setTimeout(() => { reject(new Error('JSONP timeout')); cleanup(); }, 10000);
+      });
+    }
+    async function smartGet(params) {
+      let url = API_URL;
+      if (params) url += (url.includes('?') ? '&' : '?') + params;
+      try {
+        const res = await fetch(url + (url.includes('?') ? '&' : '?') + '_=' + Date.now(), { mode: 'cors' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return await res.json();
+      } catch {
+        return await jsonp(url); // fallback
+      }
+    }
+
     /********************
      * DATA – API calls
      ********************/
@@ -100,20 +115,13 @@
     let PEOPLE = [];
 
     async function fetchAll() {
-      const ts = '&_=' + Date.now();
-      const res = await fetch(API_URL + ts);
-      if (!res.ok) throw new Error('API all failed');
-      const json = await res.json();
+      const json = await smartGet('');
       ALL = Array.isArray(json.all) ? json.all : [];
       PEOPLE = Array.isArray(json.people) ? json.people : [];
       return { ALL, PEOPLE };
     }
-
     async function fetchNext() {
-      const ts = '&_=' + Date.now();
-      const res = await fetch(API_URL + '?q=next' + ts);
-      if (!res.ok) throw new Error('API next failed');
-      const json = await res.json();
+      const json = await smartGet('q=next');
       if (Array.isArray(json.people)) PEOPLE = json.people;
       return json.next || null;
     }
@@ -136,8 +144,8 @@
 
       title.textContent = `${next.person} neemt koekjes mee op ${nlDate(next.date)}`;
       const b = [];
-      if (next.extra === 'yes') b.push('<span class="badge badge-amber">Extra koekjes</span>');
-      if (next.sprintreview === 'yes') b.push('<span class="badge badge-green">Sprintreview</span>');
+      if (next.extra === 'yes') b.push('<span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800">Extra koekjes</span>');
+      if (next.sprintreview === 'yes') b.push('<span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800">Sprintreview</span>');
       badges.innerHTML = b.join(' ');
       photo.src = personPhoto(next.person, next.photo);
     }
@@ -152,7 +160,6 @@
     function fillPeople() {
       qPerson.innerHTML = '<option value="">– iedereen –</option>' + (PEOPLE||[]).map(p => `<option value="${p}">${p}</option>`).join('');
     }
-
     function renderSearchList(items) {
       if (!items.length) { results.innerHTML = '<p class="text-slate-500">Geen resultaten.</p>'; return; }
       results.innerHTML = items.sort((a,b)=>a.date.localeCompare(b.date)).map(x => {
@@ -165,7 +172,7 @@
             <div class="text-xs text-slate-600">Afwezig: ${absentText} · Online: ${onlineText} · Extra: ${x.extra||'no'} · Sprintreview: ${x.sprintreview||'no'}</div>
           </div>
           <img src="${personPhoto(x.person, x.photo)}" class="h-8 w-8 rounded-md border"/>
-        </div>`
+        </div>`;
       }).join('');
     }
 
@@ -185,8 +192,18 @@
     function showSection(name) {
       document.getElementById('homeSection').classList.toggle('hidden', name !== 'home');
       document.getElementById('searchSection').classList.toggle('hidden', name !== 'search');
-      document.getElementById('navHome').classList.toggle('btn-primary', name==='home');
-      document.getElementById('navSearch').classList.toggle('btn-primary', name==='search');
+
+      const on = 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700';
+      const off = 'bg-white text-inherit border hover:bg-slate-50';
+      const homeBtn = document.getElementById('navHome');
+      const searchBtn = document.getElementById('navSearch');
+      if (name === 'home') {
+        homeBtn.className = homeBtn.className.replace(off, on);
+        searchBtn.className = searchBtn.className.replace(on, off);
+      } else {
+        searchBtn.className = searchBtn.className.replace(off, on);
+        homeBtn.className = homeBtn.className.replace(on, off);
+      }
     }
 
     document.getElementById('navHome').addEventListener('click', () => showSection('home'));
@@ -200,7 +217,6 @@
       try { await fetchAll(); fillPeople(); } catch {}
       try { await renderHome(); } catch {}
     }
-
     init();
   </script>
 </body>
