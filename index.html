@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Koekjesrooster</title>
+  <meta name="robots" content="noindex,nofollow">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .badge { @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium; }
+    .badge-green { @apply bg-green-100 text-green-800; }
+    .badge-amber { @apply bg-amber-100 text-amber-800; }
+    .badge-slate { @apply bg-slate-100 text-slate-700; }
+    .btn { @apply inline-flex items-center gap-2 rounded-xl px-3 py-2 shadow-sm border bg-white hover:bg-slate-50 active:scale-[.99]; }
+    .btn-primary { @apply bg-blue-600 text-white border-blue-600 hover:bg-blue-700; }
+    .card { @apply rounded-2xl shadow-sm border bg-white; }
+    .input { @apply w-full rounded-xl border px-3 py-2; }
+    .section { @apply max-w-6xl mx-auto p-4 sm:p-6 space-y-6; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <header class="border-b bg-white">
+    <div class="max-w-6xl mx-auto flex items-center justify-between p-4 sm:p-6">
+      <h1 class="text-2xl font-bold">🍪 Koekjesrooster</h1>
+      <nav class="flex gap-3">
+        <button id="navHome" class="btn btn-primary">Home</button>
+        <button id="navSearch" class="btn">Zoeken</button>
+        <a id="manageLink" class="btn" href="#" target="_blank" rel="noopener">Beheren in Google&nbsp;Sheets</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="section">
+    <!-- HOME / VOLGENDE BEURT -->
+    <section id="homeSection" class="space-y-4">
+      <div class="card p-5 sm:p-6">
+        <div class="flex items-center gap-4">
+          <img id="nextPhoto" alt="Foto volgende persoon" class="h-16 w-16 rounded-2xl object-cover border" src="" onerror="this.src='https://ui-avatars.com/api/?name=Koekjes&background=e2e8f0'" />
+          <div class="flex-1">
+            <p class="text-sm text-slate-500">Eerstvolgende koekjesdienst</p>
+            <h2 id="nextTitle" class="text-xl font-semibold">—</h2>
+            <div id="nextBadges" class="mt-1 flex flex-wrap gap-2"></div>
+          </div>
+          <div class="flex flex-col gap-2">
+            <button id="btnRefresh" class="btn">Verversen</button>
+          </div>
+        </div>
+      </div>
+      <div class="text-sm text-slate-600">
+        <p>Beheer staat in Google&nbsp;Sheets (knop bovenaan). Deze pagina leest alleen de gegevens.</p>
+      </div>
+    </section>
+
+    <!-- ZOEKEN -->
+    <section id="searchSection" class="hidden space-y-4">
+      <div class="card p-5 sm:p-6">
+        <h3 class="text-lg font-semibold mb-4">Zoeken</h3>
+        <form id="searchForm" class="grid sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm mb-1">Op datum</label>
+            <input type="date" id="qDate" class="input" />
+          </div>
+          <div>
+            <label class="block text-sm mb-1">Op persoon</label>
+            <select id="qPerson" class="input"></select>
+          </div>
+          <div class="flex items-end">
+            <button class="btn btn-primary" type="submit">Zoek</button>
+          </div>
+        </form>
+      </div>
+      <div class="card p-5 sm:p-6">
+        <h4 class="font-semibold mb-3">Resultaten</h4>
+        <div id="searchResults" class="space-y-2 text-sm"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="text-center text-xs text-slate-500 py-6">© Koekjesrooster – simpele webapp</footer>
+
+  <script>
+    /********************
+     * CONFIG
+     ********************/
+    // Ingevulde URLs
+    const API_URL   = 'https://script.google.com/macros/s/AKfycbxoOpZs6yfFF6Az2v79GQOwK1-K9AorZpEe5Jija5X_1w_ltC4h5P5qC5SlpEMWRsNQqQ/exec';
+    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1gd4RDGMyfbN7GSEkyMJDSeAiP65w6ohnC86UVvXlm6g/edit?gid=0#gid=0';
+
+    /********************
+     * HELPERS
+     ********************/
+    const q = sel => document.querySelector(sel);
+    const nlDate = (iso) => new Date(iso + 'T00:00:00').toLocaleDateString('nl-NL', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    function personPhoto(p, urlFromSheet) { return urlFromSheet || `https://ui-avatars.com/api/?name=${encodeURIComponent(p)}&background=e2e8f0`; }
+
+    /********************
+     * DATA – API calls
+     ********************/
+    let ALL = [];
+    let PEOPLE = [];
+
+    async function fetchAll() {
+      const ts = '&_=' + Date.now();
+      const res = await fetch(API_URL + ts);
+      if (!res.ok) throw new Error('API all failed');
+      const json = await res.json();
+      ALL = Array.isArray(json.all) ? json.all : [];
+      PEOPLE = Array.isArray(json.people) ? json.people : [];
+      return { ALL, PEOPLE };
+    }
+
+    async function fetchNext() {
+      const ts = '&_=' + Date.now();
+      const res = await fetch(API_URL + '?q=next' + ts);
+      if (!res.ok) throw new Error('API next failed');
+      const json = await res.json();
+      if (Array.isArray(json.people)) PEOPLE = json.people;
+      return json.next || null;
+    }
+
+    /********************
+     * HOME
+     ********************/
+    async function renderHome() {
+      const next = await fetchNext();
+      const title = q('#nextTitle');
+      const photo = q('#nextPhoto');
+      const badges = q('#nextBadges');
+
+      if (!next) {
+        title.textContent = 'Nog geen komende datum ingepland';
+        photo.src = 'https://ui-avatars.com/api/?name=Koekjes&background=e2e8f0';
+        badges.innerHTML = '';
+        return;
+      }
+
+      title.textContent = `${next.person} neemt koekjes mee op ${nlDate(next.date)}`;
+      const b = [];
+      if (next.extra === 'yes') b.push('<span class="badge badge-amber">Extra koekjes</span>');
+      if (next.sprintreview === 'yes') b.push('<span class="badge badge-green">Sprintreview</span>');
+      badges.innerHTML = b.join(' ');
+      photo.src = personPhoto(next.person, next.photo);
+    }
+
+    /********************
+     * ZOEKEN
+     ********************/
+    const qDate = document.getElementById('qDate');
+    const qPerson = document.getElementById('qPerson');
+    const results = document.getElementById('searchResults');
+
+    function fillPeople() {
+      qPerson.innerHTML = '<option value="">– iedereen –</option>' + (PEOPLE||[]).map(p => `<option value="${p}">${p}</option>`).join('');
+    }
+
+    function renderSearchList(items) {
+      if (!items.length) { results.innerHTML = '<p class="text-slate-500">Geen resultaten.</p>'; return; }
+      results.innerHTML = items.sort((a,b)=>a.date.localeCompare(b.date)).map(x => {
+        const onlineText = Array.isArray(x.online) && x.online.length ? x.online.join(', ') : '—';
+        const absentText = Array.isArray(x.absent) && x.absent.length ? x.absent.join(', ') : '—';
+        return `
+        <div class="border rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <div class="font-medium">${x.person} – ${nlDate(x.date)}</div>
+            <div class="text-xs text-slate-600">Afwezig: ${absentText} · Online: ${onlineText} · Extra: ${x.extra||'no'} · Sprintreview: ${x.sprintreview||'no'}</div>
+          </div>
+          <img src="${personPhoto(x.person, x.photo)}" class="h-8 w-8 rounded-md border"/>
+        </div>`
+      }).join('');
+    }
+
+    document.getElementById('searchForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const d = qDate.value || null;
+      const p = qPerson.value || null;
+      let arr = ALL.slice();
+      if (d) arr = arr.filter(x => x.date === d);
+      if (p) arr = arr.filter(x => x.person === p);
+      renderSearchList(arr);
+    });
+
+    /********************
+     * NAV & INIT
+     ********************/
+    function showSection(name) {
+      document.getElementById('homeSection').classList.toggle('hidden', name !== 'home');
+      document.getElementById('searchSection').classList.toggle('hidden', name !== 'search');
+      document.getElementById('navHome').classList.toggle('btn-primary', name==='home');
+      document.getElementById('navSearch').classList.toggle('btn-primary', name==='search');
+    }
+
+    document.getElementById('navHome').addEventListener('click', () => showSection('home'));
+    document.getElementById('navSearch').addEventListener('click', () => showSection('search'));
+    document.getElementById('btnRefresh').addEventListener('click', () => { init(); });
+
+    document.getElementById('manageLink').href = SHEET_URL;
+
+    async function init() {
+      showSection('home');
+      try { await fetchAll(); fillPeople(); } catch {}
+      try { await renderHome(); } catch {}
+    }
+
+    init();
+  </script>
+</body>
+</html>
