@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Koekjesrooster</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <h1 class="title">🍪 Koekjesrooster</h1>
+      <nav class="nav">
+        <button id="navHome"   class="btn btn--primary">Home</button>
+        <button id="navSearch" class="btn">Zoeken</button>
+        <a id="manageLink" class="btn" href="#" target="_blank" rel="noopener">Beheren in Google Sheets</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container main">
+    <!-- HOME -->
+    <section id="homeSection" class="stack">
+      <div class="card">
+        <div class="row row--center">
+          <img id="nextPhoto" alt="Foto volgende persoon" class="avatar" src="" />
+          <div class="grow">
+            <p class="muted">Eerstvolgende koekjesdienst</p>
+            <h2 id="nextTitle" class="h2">—</h2>
+            <div id="nextBadges" class="badges"></div>
+            <div id="nextLists" class="lists"></div>
+          </div>
+          <div class="col">
+            <button id="btnRefresh" class="btn">Verversen</button>
+          </div>
+        </div>
+      </div>
+      <p class="muted small">Beheer staat in Google Sheets (knop bovenaan). Deze pagina leest alleen de gegevens.</p>
+    </section>
+
+    <!-- ZOEKEN -->
+    <section id="searchSection" class="stack hidden">
+      <div class="card">
+        <h3 class="h3">Zoeken</h3>
+        <form id="searchForm" class="grid">
+          <label class="field">
+            <span class="label">Op datum</span>
+            <input type="date" id="qDate" class="input" />
+          </label>
+          <label class="field">
+            <span class="label">Op persoon</span>
+            <select id="qPerson" class="input"></select>
+          </label>
+          <div class="field field--end">
+            <button class="btn btn--primary" type="submit">Zoek</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h4 class="h4">Resultaten</h4>
+        <div id="searchResults" class="stack smallgap"></div>
+      </div>
+    </section>
+
+    <!-- Debug-panel (optioneel met ?debug) -->
+    <details id="debugPanel" class="card hidden">
+      <summary class="h4">Debug JSON (klik om te openen)</summary>
+      <div class="grid grid--2 mt">
+        <div>
+          <h5 class="h5">All + People</h5>
+          <pre id="debugAll"  class="pre"></pre>
+        </div>
+        <div>
+          <h5 class="h5">Next</h5>
+          <pre id="debugNext" class="pre"></pre>
+        </div>
+      </div>
+    </details>
+  </main>
+
+  <footer class="footer">© Project Systemen – Marc Gerritsen</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
