@@ -232,6 +232,17 @@ function debugPanelNext(next) {
   showDebugPanel();
   $('#debugNext').textContent = JSON.stringify(next, null, 2);
 }
+function handleSearchSubmit(e) {
+  e.preventDefault();
+  const d = document.getElementById('qDate').value || null;
+  const p = document.getElementById('qPerson').value || null;
+
+  let arr = ALL.slice();
+  if (d) arr = arr.filter(x => x.date === d);   // ISO match
+  if (p) arr = arr.filter(x => x.person === p);
+
+  renderSearchList(arr);
+}
 
 async function init() {
   showSection('home');
@@ -255,13 +266,23 @@ async function init() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  $('#navHome').addEventListener('click', () => showSection('home'));
-  $('#navSearch').addEventListener('click', () => showSection('search'));
-  $('#btnRefresh').addEventListener('click', () => init());
+  // bestaande bindings
+  document.getElementById('navHome').addEventListener('click', () => showSection('home'));
+  document.getElementById('navSearch').addEventListener('click', () => showSection('search'));
+  document.getElementById('btnRefresh').addEventListener('click', () => init());
 
-  window.addEventListener('unhandledrejection', e => {
-    console.error('[global] Unhandled promise rejection:', e.reason);
+  // ⬇️ zoekformulier submit
+  const form = document.getElementById('searchForm');
+  if (form) form.addEventListener('submit', handleSearchSubmit);
+
+  // (optioneel) direct filteren bij wijzigen
+  ['qDate','qPerson'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', () =>
+      handleSearchSubmit(new Event('submit', { cancelable: true }))
+    );
   });
 
   init();
 });
+
