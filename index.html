@@ -65,7 +65,7 @@
     </section>
   </main>
 
-  <footer class="text-center text-xs text-slate-500 py-6">© Koekjesrooster – Marc Gerritsen@vr-rr.nl</footer>
+  <footer class="text-center text-xs text-slate-500 py-6">© Koekjesrooster – Marc Gerritsen@vr-rr.nl - v2</footer>
 
   <script>
     /********************
@@ -212,12 +212,23 @@
 
     document.getElementById('manageLink').href = SHEET_URL;
 
+    // Debug helpers
+    window.__koek = {}; // you'll see data in DevTools as __koek
+
+function debugShowAll() {
+  console.log('[debug] ALL:', ALL);
+  console.log('[debug] PEOPLE:', PEOPLE);
+  window.__koek.ALL = ALL;
+  window.__koek.PEOPLE = PEOPLE;
+}
+
   async function init() {
   showSection('home');
 
   try {
     await fetchAll();
     fillPeople();
+    debugShowAll();
   } catch (err) {
     console.error('[init] fetchAll/fillPeople failed:', err);
   }
