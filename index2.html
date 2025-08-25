@@ -5,37 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Koekjesrooster</title>
   <meta name="robots" content="noindex,nofollow">
+  <!-- Brandweer-approved web alt font -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="header">
     <div class="container header__inner">
-      <h1 class="title">🍪 Koekjesrooster</h1>
+      <div class="brand">
+        <span class="brand__spark">🔥</span>
+        <h1 class="title">Koekjesrooster</h1>
+      </div>
       <nav class="nav">
         <button id="navHome"   class="btn btn--primary">Home</button>
-        <button id="navSearch" class="btn">Zoeken</button>
-        <a id="manageLink" class="btn" href="#" target="_blank" rel="noopener">Beheren in Google Sheets</a>
+        <button id="navSearch" class="btn btn--ghost">Zoeken</button>
+        <a id="manageLink" class="btn btn--ghost" href="#" target="_blank" rel="noopener">Beheren in Google Sheets</a>
       </nav>
     </div>
   </header>
 
   <main class="container main">
-    <!-- HOME -->
+    <!-- HERO / VOLGENDE BEURT -->
     <section id="homeSection" class="stack">
-      <div class="card">
-        <div class="row row--center">
-          <img id="nextPhoto" alt="Foto volgende persoon" class="avatar" src="" />
-          <div class="grow">
-            <p class="muted">Eerstvolgende koekjesdienst</p>
-            <h2 id="nextTitle" class="h2">—</h2>
+      <div id="hero" class="hero">
+        <div class="hero__overlay"></div>
+        <div class="hero__content glass">
+          <img id="nextPhoto" alt="Foto volgende persoon" class="hero__avatar" src=""/>
+          <div class="hero__text">
+            <p class="eyebrow">Eerstvolgende koekjesdienst</p>
+            <h2 id="nextTitle" class="h1">—</h2>
             <div id="nextBadges" class="badges"></div>
             <div id="nextLists" class="lists"></div>
-          </div>
-          <div class="col">
-            <button id="btnRefresh" class="btn">Verversen</button>
+            <div class="hero__cta">
+              <button id="btnRefresh" class="btn">Verversen</button>
+            </div>
           </div>
         </div>
       </div>
+
       <p class="muted small">Beheer staat in Google Sheets (knop bovenaan). Deze pagina leest alleen de gegevens.</p>
     </section>
 
@@ -80,7 +87,7 @@
     </details>
   </main>
 
-  <footer class="footer">© Project Systemen – Marc Gerritsen</footer>
+  <footer class="footer">© Koekjesrooster – vrolijke webapp</footer>
 
   <script src="app.js"></script>
 </body>
