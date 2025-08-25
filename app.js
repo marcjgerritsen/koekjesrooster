@@ -12,6 +12,16 @@ const $  = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 const DEBUG = new URLSearchParams(location.search).has('debug');
 
+// Helper to set hero background using the avatar
+function setHeroBackground(url) {
+  const hero = document.getElementById('hero');
+  if (!hero) return;
+  const bg = url || '';
+  hero.style.backgroundImage =
+    `linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.45)),
+     url("${bg}")`;
+}
+
 // avatar fallback
 function photoUrl(person, sheetUrl) {
   return sheetUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(person||'Koekjes')}&background=e2e8f0`;
@@ -185,37 +195,37 @@ async function renderHome() {
     return;
   }
 
-  // titel
-  title.textContent = `${next.person} neemt koekjes mee op ${next.date_text}`;
+ // Titel
+title.textContent = `${next.person} neemt koekjes mee op ${next.date_text}`;
 
-  // badges (alle styling in CSS-klassen)
-  badges.innerHTML = '';
-  if (next.extra === 'yes') {
-    const span = document.createElement('span');
-    span.className = 'badge badge--amber';
-    span.textContent = 'LET OP! Neem extra koekjes voor de visite!';
-    badges.appendChild(span);
-  }
-  if (next.sprintreview === 'yes') {
-    const span = document.createElement('span');
-    span.className = 'badge badge--green';
-    span.textContent = 'LET OP! Er is Sprintreview!';
-    badges.appendChild(span);
-  }
+// Badges
+badges.innerHTML = '';
+if (next.extra === 'yes') {
+  const span = document.createElement('span');
+  span.className = 'badge badge--amber';
+  span.textContent = 'LET OP! Neem extra koekjes voor de visite!';
+  badges.appendChild(span);
+}
+if (next.sprintreview === 'yes') {
+  const span = document.createElement('span');
+  span.className = 'badge badge--green';
+  span.textContent = 'LET OP! Er is Sprintreview!';
+  badges.appendChild(span);
+}
 
-  // lijstjes (alleen tekst)
-  const absentList = toList(next.absent).join(', ') || '—';
-  const onlineList = toList(next.online).join(', ') || '—';
-  lists.innerHTML = '';
-  const line1 = document.createElement('div');
-  line1.innerHTML = `Afwezig: <b>${absentList}</b>`;
-  const line2 = document.createElement('div');
-  line2.innerHTML = `Online: <b>${onlineList}</b>`;
-  lists.append(line1, line2);
+// Lijstjes
+const absentList = toList(next.absent).join(', ') || '—';
+const onlineList = toList(next.online).join(', ') || '—';
+lists.innerHTML = `
+  <div>Afwezig: <b>${absentList}</b></div>
+  <div>Online: <b>${onlineList}</b></div>
+`;
 
-  // foto
-  photo.src = photoUrl(next.person, next.photo);
-  photo.onerror = () => { photo.src = photoUrl('Koekjes'); };
+// Foto + hero background
+const pic = photoUrl(next.person, next.photo);
+photo.src = pic;
+photo.onerror = () => { photo.src = photoUrl('Koekjes'); };
+setHeroBackground(pic);
 }
 
 /********************
@@ -411,4 +421,5 @@ document.addEventListener('DOMContentLoaded', () => {
   showSection('home');
   init();
 });
+
 
